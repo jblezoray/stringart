@@ -6,8 +6,11 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.util.HashMap;
+import java.util.Map;
 
 import fr.jblezoray.stringart.edge.Edge;
+import fr.jblezoray.stringart.hillclimb.StringCharacteristics;
 import fr.jblezoray.stringart.image.ByteImage;
 import fr.jblezoray.stringart.image.CompressedByteImage;
 import fr.jblezoray.stringart.image.ImageSize;
@@ -21,6 +24,8 @@ public class EdgeDrawer {
   private final ImageSize size;
   private final int totalNumberOfNails;
   
+  private Map<Edge, CompressedByteImage> cache;
+  
   /**
    * Width of the lines (threads) when represented in the image.  
    */
@@ -31,12 +36,12 @@ public class EdgeDrawer {
    */
   private final int nailPxRadiusInt;
   
-  public EdgeDrawer(ImageSize size, int totalNumberOfNails, 
-      float lineThicknessInPx, float nailDiameterInPx) {
+  public EdgeDrawer(ImageSize size, StringCharacteristics sc) {
     this.size = size;
-    this.totalNumberOfNails = totalNumberOfNails; 
-    this.lineThicknessInPx = lineThicknessInPx;
-    this.nailPxRadiusInt = Math.max(1, (int)nailDiameterInPx);
+    this.totalNumberOfNails = sc.getNbNails(); 
+    this.lineThicknessInPx = sc.getLineThicknessInPx();
+    this.nailPxRadiusInt = Math.max(1, (int)sc.getNailDiameterInPx());
+    this.cache = new HashMap<>();
   }
   
   /**
@@ -99,6 +104,19 @@ public class EdgeDrawer {
     return (int)(-cosY*(this.size.h/2) + (this.size.h/2));
   }
 
+
+  public CompressedByteImage drawEdge(Edge edge) {
+    CompressedByteImage imageData;
+    if (this.cache.containsKey(edge)) {
+      imageData = this.cache.get(edge);
+      
+    } else {
+      imageData = this.drawEdgeNoCache(edge);
+      this.cache.put(edge, imageData);
+    }
+    return imageData;
+  }
+  
   
   /**
    * Rendering of the image.
@@ -111,7 +129,7 @@ public class EdgeDrawer {
    * @param nailBClockwise
    * @return
    */
-  public CompressedByteImage drawEdge(Edge edge) {
+  private CompressedByteImage drawEdgeNoCache(Edge edge) {
     BufferedImage image = new BufferedImage(
         this.size.w, this.size.h, BufferedImage.TYPE_BYTE_GRAY);
     

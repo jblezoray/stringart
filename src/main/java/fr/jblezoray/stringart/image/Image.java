@@ -94,8 +94,8 @@ public interface Image {
     BufferedImage result = new BufferedImage(size.w, size.h, TYPE_BYTE_GRAY);
     result.getRaster().setDataElements(0, 0, size.w, size.h, bytes);
 
-    int newW = new Double(size.w*d).intValue();
-    int newH = new Double(size.h*d).intValue();
+    int newW = Double.valueOf(size.w*d).intValue();
+    int newH = Double.valueOf(size.h*d).intValue();
     
     BufferedImage newImage = new BufferedImage(newW, newH, TYPE_BYTE_GRAY);
     Graphics2D g = newImage.createGraphics();

@@ -3,26 +3,16 @@ package fr.jblezoray.stringart.edge;
 import java.util.Comparator;
 import java.util.Objects;
 
-import fr.jblezoray.stringart.core.EdgeDrawer;
-import fr.jblezoray.stringart.image.CompressedByteImage;
-
 public class Edge {
 
   private final int nailA;
   private final boolean nailAClockwise;
   private final int nailB;
   private final boolean nailBClockwise;
-  private final EdgeDrawer edgeDrawer;
-  
-  /**
-   * This value is lazily constructed. 
-   */
-  private CompressedByteImage imageData;
   
   public Edge(
       int nailA, boolean nailAClockwise, 
-      int nailB, boolean nailBClockwise, 
-      EdgeDrawer edgeDrawer) {
+      int nailB, boolean nailBClockwise) {
     if (nailA == nailB) { 
       throw new RuntimeException("cannot draw an edge if the two nails are identical");
     }
@@ -38,7 +28,6 @@ public class Edge {
       this.nailB = nailA;
       this.nailBClockwise = nailAClockwise;
     }
-    this.edgeDrawer = edgeDrawer;
   }
   
   public int getNailA() {
@@ -55,19 +44,6 @@ public class Edge {
   
   public boolean isNailBClockwise() {
     return nailBClockwise;
-  }
-  
-  public CompressedByteImage getDrawnEdgeData() {
-    // lazy initialization.
-    if (imageData==null) {
-      synchronized (this) {
-        if (imageData==null) {
-          this.imageData = this.edgeDrawer.drawEdge(this);
-        }
-      }
-    }
-      
-    return imageData;
   }
 
   public boolean wayOf(int nail) {
@@ -93,7 +69,7 @@ public class Edge {
   
   @Override
   public int hashCode() {
-    return Objects.hashCode(this);
+    return Objects.hash(nailA, nailAClockwise, nailB, nailBClockwise);
   }
   
   @Override

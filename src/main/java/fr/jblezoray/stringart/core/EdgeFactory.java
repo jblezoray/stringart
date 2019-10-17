@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import fr.jblezoray.stringart.edge.Edge;
+import fr.jblezoray.stringart.hillclimb.StringCharacteristics;
 
 /**
  * The EdgeFactory maintains a collection of all the possible edges. 
@@ -13,7 +14,12 @@ import fr.jblezoray.stringart.edge.Edge;
 public class EdgeFactory {
   
   private final List<Edge> allPossibleEdges;
+  
+  /**
+   * If enabled, then the way a thread turns around a nail is considered.
+   */
   private final boolean wayEnabled;
+  
   private final static boolean DEFAULT_WAY = false;
   
   /**
@@ -22,34 +28,28 @@ public class EdgeFactory {
    *  considers that the string has make a 'turn' around the nail, and therefore
    *  arises at the other side.
    * 
-   * @param minNailDiff
+   * @param minimumNailDistance
    * @param totalNumberOfNails
-   * @param wayEnabled If enabled, then the way a thread turns around a nail
-   *  is considered.
-   * @param drawer
+   * @param wayEnabled 
    */
-  public EdgeFactory(
-      int minNailDiff, 
-      int totalNumberOfNails, 
-      boolean wayEnabled,
-      EdgeDrawer drawer) {
+  public EdgeFactory(StringCharacteristics sc) {
     this.allPossibleEdges = new ArrayList<>();
-    for (int i=0; i<totalNumberOfNails; i++) {
-      for (int j=i; j<totalNumberOfNails; j++) {
-        if (Math.abs(j-i) > minNailDiff) {
+    for (int i=0; i<sc.getNbNails(); i++) {
+      for (int j=i; j<sc.getNbNails(); j++) {
+        if (Math.abs(j-i) > sc.getMinimumNailsDistance()) {
           // one for each possible connection between two nails.
-          if (wayEnabled) {
-            allPossibleEdges.add(new Edge(i, true,  j, true,  drawer));
-            allPossibleEdges.add(new Edge(i, false, j, true,  drawer));
-            allPossibleEdges.add(new Edge(i, true,  j, false, drawer));
-            allPossibleEdges.add(new Edge(i, false, j, false, drawer));
+          if (sc.isEdgeWayEnabled()) {
+            allPossibleEdges.add(new Edge(i, true,  j, true));
+            allPossibleEdges.add(new Edge(i, false, j, true));
+            allPossibleEdges.add(new Edge(i, true,  j, false));
+            allPossibleEdges.add(new Edge(i, false, j, false));
           } else {
-            allPossibleEdges.add(new Edge(i, DEFAULT_WAY, j, DEFAULT_WAY, drawer));
+            allPossibleEdges.add(new Edge(i, DEFAULT_WAY, j, DEFAULT_WAY));
           }
         }
       }
     }
-    this.wayEnabled = wayEnabled;
+    this.wayEnabled = sc.isEdgeWayEnabled();
   }
   
   public Stream<Edge> streamEdges(
