@@ -2,24 +2,33 @@ package fr.jblezoray.stringart.hillclimb.listeners;
 
 import java.util.List;
 
-import fr.jblezoray.stringart.edge.Edge;
-import fr.jblezoray.stringart.edge.ScoredEdge;
+import fr.jblezoray.stringart.edge.DirectedEdge;
 import fr.jblezoray.stringart.image.Image;
 
 public class DebugListener implements IStringArtAlgoListener {
   
   @Override
-  public void notifyRoundResults(int iteration, Image curImg,  List<Edge> edges,
-      Image importanceMappingImg, Image refImg, ScoredEdge scoredEdge) {
+  public void notifyRoundResults(
+      String operationDescription,
+      int iteration, 
+      Image curImg,  
+      List<DirectedEdge> edges, 
+      Image importanceMappingImg, 
+      Image refImg, 
+      DirectedEdge addedEdge, 
+      double norm, 
+      int numberOfEdgesEvaluated, 
+      long timeTook) {
     String line = String.format(
-        "iteration:%d ; norm:%7.0f ; added nail:%3d,%3d ; round time: %5dms (mean time per nail:%d*%2.3fms)",
+        "%s ; iteration:%d ; norm:%7.0f ; nail:%3d,%3d ; time: %5dms (time/edge:%d*%2.3fms)",
+        operationDescription,
         iteration,
-        scoredEdge.getNorm(), 
-        scoredEdge.getEdge().getNailA(), 
-        scoredEdge.getEdge().getNailB(),
-        scoredEdge.getTimeTook(), 
-        scoredEdge.getNumberOfEdgesEvaluated(),
-        scoredEdge.getTimeTook() / (float)scoredEdge.getNumberOfEdgesEvaluated());
+        norm, 
+        addedEdge.getEdge().getNailA(), 
+        addedEdge.getEdge().getNailB(),
+        timeTook, 
+        numberOfEdgesEvaluated,
+        timeTook / (float)numberOfEdgesEvaluated);
     System.out.println(line);
   }
 

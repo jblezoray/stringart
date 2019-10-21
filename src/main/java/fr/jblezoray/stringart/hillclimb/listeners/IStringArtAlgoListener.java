@@ -2,8 +2,7 @@ package fr.jblezoray.stringart.hillclimb.listeners;
 
 import java.util.List;
 
-import fr.jblezoray.stringart.edge.Edge;
-import fr.jblezoray.stringart.edge.ScoredEdge;
+import fr.jblezoray.stringart.edge.DirectedEdge;
 import fr.jblezoray.stringart.image.Image;
 
 /**
@@ -13,11 +12,15 @@ import fr.jblezoray.stringart.image.Image;
 public interface IStringArtAlgoListener {
 
   void notifyRoundResults(
+      String operationDescription,
       int iteration, 
       Image curImg, 
-      List<Edge> edges,
+      List<DirectedEdge> edges,
       Image importanceMappingImg, 
       Image refImg, 
-      ScoredEdge scoredEdge);
+      DirectedEdge addedEdge, 
+      double norm,
+      int numberOfEdgesEvaluated, 
+      long timeTook);
   
 }

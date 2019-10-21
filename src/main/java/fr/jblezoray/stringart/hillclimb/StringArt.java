@@ -8,8 +8,7 @@ import java.util.Set;
 
 import fr.jblezoray.stringart.Configuration;
 import fr.jblezoray.stringart.core.EdgeImageIO;
-import fr.jblezoray.stringart.edge.Edge;
-import fr.jblezoray.stringart.edge.ScoredEdge;
+import fr.jblezoray.stringart.edge.DirectedEdge;
 import fr.jblezoray.stringart.hillclimb.listeners.IStringArtAlgoListener;
 import fr.jblezoray.stringart.image.Image;
 import fr.jblezoray.stringart.image.UnboundedImage;
@@ -31,7 +30,7 @@ public class StringArt {
   public void start() {
     double downsampleRatio = 1.0 / Math.pow(2.0, 6);
     int roundCounter =0;
-    List<Edge> edges = new ArrayList<Edge>();
+    var edges = new ArrayList<DirectedEdge>();
     while (downsampleRatio < 1.01) {
       Image referenceImgDownsized = this.referenceImg.downsample(downsampleRatio);
       Image importanceImgDownsized = this.importanceImg.downsample(downsampleRatio);
@@ -47,26 +46,39 @@ public class StringArt {
       
       int previousNorm = Integer.MAX_VALUE;
       int thisNorm = Integer.MAX_VALUE-1;
-      while (thisNorm < previousNorm) { // stop if it does not reduces the norm.
+      // try increasing the norm by adding edges.
+      while (thisNorm < previousNorm) { 
         previousNorm = thisNorm;
-        ScoredEdge addedEdge = hillClimb.makeRound();
-        this.notifyResultToListeners(++roundCounter, edges, hillClimb.getRenderedResult(), addedEdge);
-        thisNorm = (int) addedEdge.getNorm();
+        DirectedEdge addedEdge = hillClimb.addBestPossibleEdge();
+        this.notifyResultToListeners("Add", ++roundCounter, edges, 
+            hillClimb.getRenderedResult(), addedEdge, hillClimb.getNorm(), 
+            hillClimb.getNumberOfEdgesEvaluated(), hillClimb.getTimeTook());
+        thisNorm = (int) hillClimb.getNorm();
       }
-      
-      // TODO try lowering norm by removing edges 
-      
+      // try lowering norm by removing edges 
+      while (thisNorm < previousNorm) { 
+        previousNorm = thisNorm;
+        DirectedEdge removedEdge = hillClimb.removeWorstEdge();
+        this.notifyResultToListeners("Rem", ++roundCounter, edges,
+            hillClimb.getRenderedResult(), removedEdge, hillClimb.getNorm(), 
+            hillClimb.getNumberOfEdgesEvaluated(), hillClimb.getTimeTook());
+        thisNorm = (int) hillClimb.getNorm();
+      }
+
       downsampleRatio *= 2.0;
     }
     // TODO final event
   }
   
   
-  private void notifyResultToListeners(int iterationNumber, List<Edge> edges,
-      UnboundedImage currentImage, ScoredEdge addedEdgeWithScore) {
+  private void notifyResultToListeners(String operationDescription, 
+      int iterationNumber, List<DirectedEdge> edges,
+      UnboundedImage currentImage, DirectedEdge addedEdge, double norm,
+      int numberOfEdgesEvaluated, long timeTook) {
     this.processingResultListeners.forEach(listener -> 
-        listener.notifyRoundResults(iterationNumber, currentImage, edges,
-            importanceImg, referenceImg, addedEdgeWithScore)
+        listener.notifyRoundResults(operationDescription, iterationNumber, 
+            currentImage, edges, importanceImg, referenceImg, addedEdge, norm, 
+            numberOfEdgesEvaluated, timeTook)
     );
   }
   

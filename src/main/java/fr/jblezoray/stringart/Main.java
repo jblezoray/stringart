@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import fr.jblezoray.stringart.hillclimb.StringArt;
 import fr.jblezoray.stringart.hillclimb.listeners.DebugListener;
-import fr.jblezoray.stringart.hillclimb.listeners.ImageDifferenceSaverListener;
 import fr.jblezoray.stringart.hillclimb.listeners.ImageSaverListener;
 import fr.jblezoray.stringart.hillclimb.listeners.StringPathSaverListener;
 

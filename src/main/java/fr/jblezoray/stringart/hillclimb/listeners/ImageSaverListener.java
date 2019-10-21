@@ -5,8 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 import fr.jblezoray.stringart.core.EdgeImageIO;
-import fr.jblezoray.stringart.edge.Edge;
-import fr.jblezoray.stringart.edge.ScoredEdge;
+import fr.jblezoray.stringart.edge.DirectedEdge;
 import fr.jblezoray.stringart.image.Image;
 
 public class ImageSaverListener implements IStringArtAlgoListener {
@@ -20,8 +19,17 @@ public class ImageSaverListener implements IStringArtAlgoListener {
   }
   
   @Override
-  public void notifyRoundResults(int iteration, Image curImg, List<Edge> edges,
-      Image importanceMappingImg, Image refImg, ScoredEdge scoredEdge) {
+  public void notifyRoundResults(
+      String operationDescription,
+      int iteration, 
+      Image curImg,  
+      List<DirectedEdge> edges, 
+      Image importanceMappingImg, 
+      Image refImg, 
+      DirectedEdge addedEdge, 
+      double norm, 
+      int numberOfEdgesEvaluated, 
+      long timeTook) {
     if (iteration%this.iterationsBetweenSaving != 0) return;
     try {
       Image toSave = this.getImageToSave(curImg, refImg, importanceMappingImg);
