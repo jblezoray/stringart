@@ -56,6 +56,7 @@ public class StringArt {
         thisNorm = (int) hillClimb.getNorm();
       }
       // try lowering norm by removing edges 
+      previousNorm = Integer.MAX_VALUE;
       while (thisNorm < previousNorm) { 
         previousNorm = thisNorm;
         DirectedEdge removedEdge = hillClimb.removeWorstEdge();
@@ -64,6 +65,10 @@ public class StringArt {
             hillClimb.getNumberOfEdgesEvaluated(), hillClimb.getTimeTook());
         thisNorm = (int) hillClimb.getNorm();
       }
+      
+      this.notifyResultToListeners("End", ++roundCounter, edges,
+          hillClimb.getRenderedResult(), null, hillClimb.getNorm(), 
+          hillClimb.getNumberOfEdgesEvaluated(), hillClimb.getTimeTook());
 
       downsampleRatio *= 2.0;
     }
