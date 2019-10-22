@@ -15,6 +15,7 @@ import fr.jblezoray.stringart.image.UnboundedImage;
 
 public class StringArtHillClimb {
 
+  private static final double MIN_NORM_DIFF = 1.0;
   private final EdgeDrawer edgeDrawer;
   private final EdgeFactory edgeFactory;
   private final Image referenceImg;
@@ -23,9 +24,10 @@ public class StringArtHillClimb {
 
   private UnboundedImage renderedResult;
   
-  private double norm;
+  private double norm = Double.MAX_VALUE;
   private int numberOfEdgesEvaluated;
   private long timeTook;
+  private Optional<DirectedEdge> modifiedEdge;
   
   
   public StringArtHillClimb(
@@ -43,16 +45,13 @@ public class StringArtHillClimb {
     this.edges.forEach(e -> 
         this.renderedResult.add(this.edgeDrawer.drawEdge(e.getEdge())));
   }
+  
+  public List<DirectedEdge> getEdges() {
+    return edges;
+  }
 
   public UnboundedImage getRenderedResult() {
     return renderedResult;
-  }
-  
-  public DirectedEdge addBestPossibleEdge() {
-    DirectedEdge addedEdge = getBestEdgeAdditionToReduceNorm();
-    renderedResult.add(this.edgeDrawer.drawEdge(addedEdge.getEdge()));
-    edges.add(addedEdge);
-    return addedEdge;
   }
   
   public double getNorm() {
@@ -66,17 +65,41 @@ public class StringArtHillClimb {
   public long getTimeTook() {
     return timeTook;
   }
+  
+  public Optional<DirectedEdge> addBestPossibleEdge() {
+    AddEdgeScored e = getBestEdgeAdditionToReduceNorm();
+    if (e.newNormIfAdded > this.norm - MIN_NORM_DIFF) 
+      return Optional.empty();
+    
+    boolean isNailATheEnd = Optional.of(this.getEdges().size())
+        .filter(s->s>=1)
+        .map(size -> this.getEdges().get(size-1))
+        .map(p -> e.edge.getNailB() == p.getEndNail())
+        .orElse(true);
+    DirectedEdge addedEdge = new DirectedEdge(e.edge, isNailATheEnd);
 
-  public DirectedEdge removeWorstEdge() {
-    RemoveEdgeScored e = getBestEdgeRemovalToReduceNorm();
-    renderedResult.remove(this.edgeDrawer.drawEdge(this.edges.get(e.index).getEdge()));
-    this.edges.remove(e.index);
-    if (e.replacementForTheNextEdge.isPresent()) {
-      renderedResult.remove(this.edgeDrawer.drawEdge(this.edges.get(e.index+1).getEdge()));
-      renderedResult.add(this.edgeDrawer.drawEdge(e.replacementForTheNextEdge.get().getEdge()));
-      this.edges.add(e.index, e.replacementForTheNextEdge.get());
+    this.norm = e.newNormIfAdded;
+    this.renderedResult.add(this.edgeDrawer.drawEdge(addedEdge.getEdge()));
+    this.edges.add(addedEdge);
+    this.modifiedEdge = Optional.of(addedEdge);
+    return Optional.of(addedEdge);
+  }
+
+  public Optional<DirectedEdge> removeWorstEdge() {
+    Optional<RemoveEdgeScored> e = getBestEdgeRemovalToReduceNorm();
+    if (!e.isPresent() || e.get().newNormIfRemoved > this.norm - MIN_NORM_DIFF) 
+      return Optional.empty();
+    
+    this.norm = e.get().newNormIfRemoved;
+    modifiedEdge = Optional.of(this.edges.get(e.get().index));
+    renderedResult.remove(this.edgeDrawer.drawEdge(this.edges.get(e.get().index).getEdge()));
+    this.edges.remove(e.get().index);
+    if (e.get().replacementForTheNextEdge.isPresent()) {
+      renderedResult.remove(this.edgeDrawer.drawEdge(this.edges.get(e.get().index+1).getEdge()));
+      renderedResult.add(this.edgeDrawer.drawEdge(e.get().replacementForTheNextEdge.get().getEdge()));
+      this.edges.add(e.get().index, e.get().replacementForTheNextEdge.get());
     }
-    return e.removedEdge;
+    return Optional.of(e.get().removedEdge);
   }
 
   /**
@@ -89,7 +112,7 @@ public class StringArtHillClimb {
    * @param edges
    * @return
    */
-  private DirectedEdge getBestEdgeAdditionToReduceNorm() {
+  private AddEdgeScored getBestEdgeAdditionToReduceNorm() {
     int prevNail;
     boolean isPrevNailClockwise;
     if (this.edges.size() > 0) {
@@ -115,11 +138,9 @@ public class StringArtHillClimb {
         .orElseThrow(() -> new RuntimeException("Invalid state: no edge."));
     long after = System.currentTimeMillis();
     
-    boolean isNailATheEnd = bestEdge.edge.getNailB() == prevNail;
-    this.norm = bestEdge.newNormIfAdded;
     this.numberOfEdgesEvaluated = numberOfEdges.get();
     this.timeTook = after - before;
-    return new DirectedEdge(bestEdge.edge, isNailATheEnd);
+    return bestEdge;
   }
   
   private static class AddEdgeScored {
@@ -127,21 +148,19 @@ public class StringArtHillClimb {
     double newNormIfAdded;
   }
 
-  private RemoveEdgeScored getBestEdgeRemovalToReduceNorm() {
+  private Optional<RemoveEdgeScored> getBestEdgeRemovalToReduceNorm() {
     long before = System.currentTimeMillis();
     AtomicInteger numberOfEdges = new AtomicInteger();
     
-    RemoveEdgeScored worstEdge = IntStream.range(0, this.edges.size())
+    Optional<RemoveEdgeScored> worstEdge = IntStream.range(0, this.edges.size())
         .boxed()
         .map(edgeIndex -> getScoreIfRemovedFromImage(edgeIndex))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .peek(edge -> numberOfEdges.incrementAndGet())
-        .min((a, b) -> a.newNormIfRemoved < b.newNormIfRemoved ? -1 : 1)
-        .orElseThrow(() -> new RuntimeException("Invalid state: no edge."));
+        .min((a, b) -> a.newNormIfRemoved < b.newNormIfRemoved ? -1 : 1);
     long after = System.currentTimeMillis();
     
-    this.norm = worstEdge.newNormIfRemoved;
     this.numberOfEdgesEvaluated = numberOfEdges.get();
     this.timeTook = after - before;
     return worstEdge;
@@ -211,5 +230,9 @@ public class StringArtHillClimb {
     result.edge = edge;
     result.newNormIfAdded = norm;
     return result;
+  }
+
+  public Optional<DirectedEdge> getModifiedEdge() {
+    return this.modifiedEdge;
   }
 }

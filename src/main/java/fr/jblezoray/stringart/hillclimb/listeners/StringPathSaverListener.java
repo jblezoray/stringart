@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import fr.jblezoray.stringart.edge.DirectedEdge;
 import fr.jblezoray.stringart.image.Image;
@@ -21,13 +22,13 @@ public class StringPathSaverListener implements IStringArtAlgoListener {
   
   @Override
   public void notifyRoundResults(
-      String operationDescription, 
+      Step operationDescription, 
       int iteration, 
       Image curImg,  
       List<DirectedEdge> edges, 
       Image importanceMappingImg, 
       Image refImg, 
-      DirectedEdge addedEdge, 
+      Optional<DirectedEdge> modifiedEdge, 
       double norm, 
       int numberOfEdgesEvaluated, 
       long timeTook) {

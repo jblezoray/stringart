@@ -1,6 +1,7 @@
 package fr.jblezoray.stringart;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import fr.jblezoray.stringart.hillclimb.StringArt;
 import fr.jblezoray.stringart.hillclimb.listeners.DebugListener;
@@ -16,7 +17,7 @@ public class Main {
     stringArt.addListener(new ImageSaverListener(50, configuration.getRenderedImageName()));
 //    stringArt.addListener(new ImageDifferenceSaverListener(50, configuration.getRenderedImageDifferenceName()));
     stringArt.addListener(new StringPathSaverListener(10, configuration.getRenderedStringPathFilename()));
-    stringArt.start();
+    stringArt.start(new ArrayList<>());
   }
   
 }

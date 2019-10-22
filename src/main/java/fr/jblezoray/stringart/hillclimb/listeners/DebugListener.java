@@ -1,21 +1,23 @@
 package fr.jblezoray.stringart.hillclimb.listeners;
 
 import java.util.List;
+import java.util.Optional;
 
 import fr.jblezoray.stringart.edge.DirectedEdge;
+import fr.jblezoray.stringart.edge.Edge;
 import fr.jblezoray.stringart.image.Image;
 
 public class DebugListener implements IStringArtAlgoListener {
   
   @Override
   public void notifyRoundResults(
-      String operationDescription,
+      Step operationDescription,
       int iteration, 
       Image curImg,  
       List<DirectedEdge> edges, 
       Image importanceMappingImg, 
       Image refImg, 
-      DirectedEdge addedEdge, 
+      Optional<DirectedEdge> modifiedEdge, 
       double norm, 
       int numberOfEdgesEvaluated, 
       long timeTook) {
@@ -25,8 +27,8 @@ public class DebugListener implements IStringArtAlgoListener {
         curImg.getSize(),
         iteration,
         norm, 
-        addedEdge.getEdge().getNailA(), 
-        addedEdge.getEdge().getNailB(),
+        modifiedEdge.map(DirectedEdge::getEdge).map(Edge::getNailA).orElse(-1),
+        modifiedEdge.map(DirectedEdge::getEdge).map(Edge::getNailB).orElse(-1), 
         timeTook, 
         numberOfEdgesEvaluated,
         timeTook / (float)numberOfEdgesEvaluated);
