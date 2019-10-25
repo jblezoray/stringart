@@ -46,7 +46,7 @@ public class StringArt {
       downsampleRatio *= 2.0;
     }
     
-    this.notifyResultToListeners(Step.FINAL, ++roundCounter, hc.getEdges(),
+    this.notifyResultToListeners(Step.FINAL, roundCounter, hc.getEdges(),
         hc.getRenderedResult(), Optional.empty(), hc.getNorm(), 
         hc.getNumberOfEdgesEvaluated(), hc.getTimeTook());
   }
@@ -87,7 +87,7 @@ public class StringArt {
     
     var sc = new StringCharacteristics(lineThicknessInPx, 
         nailDiameterInPx, configuration.getNbNails(), configuration.isEdgeWayEnabled(),
-        configuration.getMinNailsDiff());
+        configuration.getMinNailsDiff(), configuration.getShape());
     
     return new StringArtHillClimb(edges, referenceImgDownsized, 
         importanceImgDownsized, sc);

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import fr.jblezoray.stringart.core.EdgeDrawer;
+import fr.jblezoray.stringart.core.EdgeDrawerFactory;
 import fr.jblezoray.stringart.core.EdgeFactory;
 import fr.jblezoray.stringart.edge.DirectedEdge;
 import fr.jblezoray.stringart.edge.Edge;
@@ -38,7 +39,7 @@ public class StringArtHillClimb {
     this.edges = edges;
     this.referenceImg = referenceImg;
     this.importanceImg = importanceImg;
-    this.edgeDrawer = new EdgeDrawer(this.referenceImg.getSize(), sc);
+    this.edgeDrawer = EdgeDrawerFactory.build(this.referenceImg.getSize(), sc);
     this.edgeFactory = new EdgeFactory(sc);
     this.renderedResult = new UnboundedImage(this.referenceImg.getSize())
         .add(this.edgeDrawer.drawAllNails());

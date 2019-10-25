@@ -34,7 +34,8 @@ public class ImageSaverListener implements IStringArtAlgoListener {
       int numberOfEdgesEvaluated, 
       long timeTook) {
     long curTimestampMS = new Date().getTime();
-    if (curTimestampMS - prevTimestampMS > secondsBetweenSaving * 1_000) {
+    if (Step.FINAL.equals(operationDescription) || 
+        curTimestampMS - prevTimestampMS > secondsBetweenSaving * 1_000) {
       prevTimestampMS = curTimestampMS;
       try {
         Image toSave = this.getImageToSave(curImg, refImg, importanceMappingImg);

@@ -1,5 +1,7 @@
 package fr.jblezoray.stringart;
 
+import fr.jblezoray.stringart.hillclimb.StringCharacteristics.Shape;
+
 public class Configuration {
 
   /**
@@ -55,6 +57,8 @@ public class Configuration {
   private int nbNails = 200;
   
   private int minNailsDiff = Math.max(1, (int)nbNails/20);
+
+  private Shape shape = Shape.FRAME_BORDER;
   
   
   public String getGoalImagePath() {
@@ -123,9 +127,8 @@ public class Configuration {
   public void setRenderedStringPathFilename(String renderedStringPathFilename) {
     this.renderedStringPathFilename = renderedStringPathFilename;
   }
-  
-  
-  
-  
+  public Shape getShape() {
+    return shape;
+  }
 
 }

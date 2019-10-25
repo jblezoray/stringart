@@ -3,20 +3,22 @@ package fr.jblezoray.stringart.core;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.jblezoray.stringart.core.EdgeDrawer;
+import fr.jblezoray.stringart.core.CircleEdgeDrawer;
 import fr.jblezoray.stringart.edge.Edge;
 import fr.jblezoray.stringart.hillclimb.StringCharacteristics;
+import fr.jblezoray.stringart.hillclimb.StringCharacteristics.Shape;
 import fr.jblezoray.stringart.image.CompressedByteImage;
 import fr.jblezoray.stringart.image.ImageSize;
 import fr.jblezoray.stringart.image.UnboundedImage;
 
-public class EdgeDrawerTest {
+public class CircleEdgeDrawerTest {
   
   @Test
   public void compressed_image_shall_encode_the_right_nb_of_bytes() {
     ImageSize size = new ImageSize(1000, 1000);
-    StringCharacteristics sc = new StringCharacteristics(1.0f, 2.0f, 5, true, 1);
-    EdgeDrawer d = new EdgeDrawer(size, sc);
+    StringCharacteristics sc = new StringCharacteristics(
+        1.0f, 2.0f, 5, true, 1, Shape.CIRCLE);
+    CircleEdgeDrawer d = new CircleEdgeDrawer(size, sc);
     Edge edge = new Edge(1, false, 3, false);
     
     CompressedByteImage drawnEdge = d.drawEdge(edge);
@@ -31,8 +33,9 @@ public class EdgeDrawerTest {
   @Test
   public void drawing_a_edge_on_a_white_image_equals_the_edge_itself() {
     ImageSize size = new ImageSize(10, 10);
-    StringCharacteristics sc = new StringCharacteristics(1.0f, 2.0f, 5, true, 1);
-    EdgeDrawer d = new EdgeDrawer(size, sc);
+    StringCharacteristics sc = new StringCharacteristics(
+        1.0f, 2.0f, 5, true, 1, Shape.CIRCLE);
+    CircleEdgeDrawer d = new CircleEdgeDrawer(size, sc);
     Edge e = new Edge(1, false, 3, false);
     
     CompressedByteImage drawnEdge = d.drawEdge(e);
@@ -46,8 +49,9 @@ public class EdgeDrawerTest {
   @Test
   public void drawing_a_edge_multiple_times_results_in_a_black_and_white_image() {
     ImageSize size = new ImageSize(10, 10);
-    StringCharacteristics sc = new StringCharacteristics(1.0f, 2.0f, 5, true, 1);
-    EdgeDrawer d = new EdgeDrawer(size, sc);
+    StringCharacteristics sc = new StringCharacteristics(
+        1.0f, 2.0f, 5, true, 1, Shape.CIRCLE);
+    CircleEdgeDrawer d = new CircleEdgeDrawer(size, sc);
     Edge e = new Edge(1, false, 3, false);
     CompressedByteImage eImg = d.drawEdge(e);
     
@@ -66,8 +70,9 @@ public class EdgeDrawerTest {
   @Test
   public void a_drawn_edge_can_be_removed() {
     ImageSize size = new ImageSize(10, 10);
-    StringCharacteristics sc = new StringCharacteristics(1.0f, 2.0f, 5, true, 1);
-    EdgeDrawer d = new EdgeDrawer(size, sc);
+    StringCharacteristics sc = new StringCharacteristics(
+        1.0f, 2.0f, 5, true, 1, Shape.CIRCLE);
+    CircleEdgeDrawer d = new CircleEdgeDrawer(size, sc);
     Edge e1 = new Edge(1, false, 3, false);
     Edge e2 = new Edge(2, false, 4, false);
     Edge e3 = new Edge(0, false, 3, false);
@@ -88,19 +93,6 @@ public class EdgeDrawerTest {
     Assert.assertArrayEquals(
         first.asByteImage().getRawBytes(), 
         second.asByteImage().getRawBytes());
-  }
-  
-
-  @SuppressWarnings("unused")
-  private String toString(byte[] bytes, int lineW) {
-    StringBuffer sb = new StringBuffer();
-    for (int i=0; i<bytes.length; i++) {
-      byte b = bytes[i];
-      sb.append(String.format("%02x ", Byte.toUnsignedInt(b)));
-      if (i%lineW==lineW-1)
-        sb.append('\n');
-    }
-    return sb.toString();
   }
 
 }
