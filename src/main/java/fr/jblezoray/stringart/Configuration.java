@@ -64,7 +64,7 @@ public class Configuration {
   
   private int minNailsDiff = Math.max(1, (int)nbNails/20);
 
-  private Shape shape = Shape.FRAME_BORDER;
+  private Shape shape = Shape.CIRCLE;
   
   
   public String getGoalImagePath() {
