@@ -54,6 +54,14 @@ public class StringArtHillClimb {
   public UnboundedImage getRenderedResult() {
     return renderedResult;
   }
+
+  public Image getReferenceImage() {
+    return referenceImg;
+  }
+
+  public Image getImportanceImage() {
+    return importanceImg;
+  }
   
   public double getNorm() {
     return norm;

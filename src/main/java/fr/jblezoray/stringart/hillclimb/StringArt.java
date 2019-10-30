@@ -52,8 +52,8 @@ public class StringArt {
     while (downsampleRatio < 1.01) { 
       hc = this.hillClimbFactory(downsampleRatio, edges);
       this.notifyResultToListeners(Step.SCALE, ++roundCounter, hc.getEdges(), 
-          hc.getRenderedResult(), Optional.empty(), 0, 
-          hc.getNumberOfEdgesEvaluated(), hc.getTimeTook());
+          hc.getRenderedResult(), hc.getReferenceImage(), hc.getImportanceImage(),
+          Optional.empty(), 0, hc.getNumberOfEdgesEvaluated(), hc.getTimeTook());
       
       this.startForScale(hc);
       
@@ -61,8 +61,9 @@ public class StringArt {
     }
     
     this.notifyResultToListeners(Step.FINAL, roundCounter, hc.getEdges(),
-        hc.getRenderedResult(), Optional.empty(), hc.getNorm(), 
-        hc.getNumberOfEdgesEvaluated(), hc.getTimeTook());
+        hc.getRenderedResult(), hc.getReferenceImage(), hc.getImportanceImage(),
+        Optional.empty(), hc.getNorm(), hc.getNumberOfEdgesEvaluated(), 
+        hc.getTimeTook());
   }
   
 
@@ -79,8 +80,9 @@ public class StringArt {
         if (modifiedEdge.isPresent()) roundCounter++;
         
         this.notifyResultToListeners(stepType, roundCounter, hc.getEdges(), 
-            hc.getRenderedResult(), modifiedEdge, hc.getNorm(), 
-            hc.getNumberOfEdgesEvaluated(), hc.getTimeTook());
+            hc.getRenderedResult(), hc.getReferenceImage(), hc.getImportanceImage(), 
+            modifiedEdge, hc.getNorm(), hc.getNumberOfEdgesEvaluated(), 
+            hc.getTimeTook());
         
       } while (modifiedEdge.isPresent());
       
@@ -110,11 +112,12 @@ public class StringArt {
   
   private void notifyResultToListeners(Step operationDescription, 
       int iterationNumber, List<DirectedEdge> edges,
-      UnboundedImage currentImage, Optional<DirectedEdge> modifiedEdge, double norm,
+      UnboundedImage currentImage, Image referenceImage, Image importanceImage, 
+      Optional<DirectedEdge> modifiedEdge, double norm,
       int numberOfEdgesEvaluated, long timeTook) {
     this.processingResultListeners.forEach(listener -> 
         listener.notifyRoundResults(operationDescription, iterationNumber, 
-            currentImage, edges, importanceImg, referenceImg, modifiedEdge, norm, 
+            currentImage, edges, importanceImage, referenceImage, modifiedEdge, norm, 
             numberOfEdgesEvaluated, timeTook)
     );
   }

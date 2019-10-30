@@ -26,8 +26,9 @@ public class Configuration {
    * 
    * if not present, the approximation image will be determined automatically.
    */
-  private Optional<String> importanceImagePath = //Optional.of("test2/einstein_features2.png");
-        Optional.empty();
+  private Optional<String> importanceImagePath = 
+      //Optional.of("test2/einstein_features2.png");
+      Optional.empty();
     
   /**
    * Filename for the result.  
