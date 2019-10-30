@@ -13,6 +13,7 @@ public class Main {
   public static void main(String[] args) throws IOException {
     Configuration configuration = new Configuration();
     StringArt stringArt = new StringArt(configuration);
+    
     stringArt.addListener(new DebugListener());
     stringArt.addListener(new ImageSaverListener(2, configuration.getRenderedImageName()));
 //    stringArt.addListener(new ImageDifferenceSaverListener(50, configuration.getRenderedImageDifferenceName()));

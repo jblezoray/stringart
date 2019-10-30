@@ -11,12 +11,14 @@ import fr.jblezoray.stringart.core.EdgeImageIO;
 import fr.jblezoray.stringart.edge.DirectedEdge;
 import fr.jblezoray.stringart.hillclimb.listeners.IStringArtAlgoListener;
 import fr.jblezoray.stringart.hillclimb.listeners.Step;
+import fr.jblezoray.stringart.image.ByteImage;
+import fr.jblezoray.stringart.image.HarrisCornerDetection;
 import fr.jblezoray.stringart.image.Image;
 import fr.jblezoray.stringart.image.UnboundedImage;
 
 public class StringArt {
 
-  private final Image referenceImg;
+  private final ByteImage referenceImg;
   private final Image importanceImg;
   private final Configuration configuration;
 
@@ -25,9 +27,21 @@ public class StringArt {
   private int roundCounter =0;
   
   public StringArt(Configuration configuration) throws IOException {
-    this.referenceImg = EdgeImageIO.readFile(configuration.getGoalImagePath());
-    this.importanceImg = EdgeImageIO.readFile(configuration.getImportanceImagePath());
     this.configuration = configuration;
+    
+    this.referenceImg = EdgeImageIO.readFile(configuration.getGoalImagePath());
+
+    if (configuration.getImportanceImagePath().isPresent()) {
+      var impath = configuration.getImportanceImagePath().get();
+      this.importanceImg = EdgeImageIO.readFile(impath);
+      
+    } else {
+      this.importanceImg = new HarrisCornerDetection()
+          .compute(this.referenceImg)
+          .highPassFilter(500)
+          .asByteImage()
+          .minFilter(100);
+    }
   }
 
   public void start(List<DirectedEdge> edges) {

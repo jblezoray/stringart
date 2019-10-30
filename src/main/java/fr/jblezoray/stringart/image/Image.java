@@ -58,7 +58,7 @@ public interface Image {
     IntStream.range(0, size.nbPixels).parallel().forEach(i -> {
       int thisPixel = ((int) thisBytes[i]) & 0xff;
       int otherPixel = ((int) otherBytes[i]) & 0xff;
-      output[i] = (byte)(thisPixel * otherPixel / (float)0xFF);
+      output[i] = (byte)((thisPixel * otherPixel) / (float)0xFF);
     });
     return new ByteImage(size, output);
   }
@@ -109,6 +109,19 @@ public interface Image {
 
     byte[] newBytes = ((DataBufferByte) newImage.getRaster().getDataBuffer()).getData();
     return new ByteImage(new ImageSize(newW, newH), newBytes);
+  }
+
+  default Image minFilter(int minValue) {
+    ImageSize size = this.getSize();
+    byte minValueAsByte = (byte)minValue;
+    byte[] bytes = this.asByteImage().getRawBytes();
+    byte[] newBytes = new byte[bytes.length];
+    for (int i=0; i<bytes.length; i++) {
+      newBytes[i] = 
+          (Byte.toUnsignedInt(bytes[i])<minValueAsByte) 
+          ? minValueAsByte : bytes[i]; 
+    }
+    return new ByteImage(size, newBytes);
   }
 
 

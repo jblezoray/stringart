@@ -1,5 +1,7 @@
 package fr.jblezoray.stringart;
 
+import java.util.Optional;
+
 import fr.jblezoray.stringart.hillclimb.StringCharacteristics.Shape;
 
 public class Configuration {
@@ -10,7 +12,7 @@ public class Configuration {
    * The prurpose of the program is to produce a string image that has the 
    * smallest difference with this image. 
    */
-  private String goalImagePath = "test2/einstein.png";
+  private String goalImagePath = "test2/einstein2.png";
 
   /**
    * The importance image.
@@ -21,9 +23,12 @@ public class Configuration {
    * fitness. A value of OxFF corresponds to the maximum influence possible.
    * Therefore, the brighter the zone are in the importanceMappingImage, the
    * more they represent important features of the reference image.
+   * 
+   * if not present, the approximation image will be determined automatically.
    */
-  private String importanceImagePath = "test2/einstein_features2.png";
-  
+  private Optional<String> importanceImagePath = //Optional.of("test2/einstein_features2.png");
+        Optional.empty();
+    
   /**
    * Filename for the result.  
    */
@@ -67,10 +72,10 @@ public class Configuration {
   public void setGoalImagePath(String goalImagePath) {
     this.goalImagePath = goalImagePath;
   }
-  public String getImportanceImagePath() {
+  public Optional<String> getImportanceImagePath() {
     return importanceImagePath;
   }
-  public void setImportanceImagePath(String importanceImagePath) {
+  public void setImportanceImagePath(Optional<String> importanceImagePath) {
     this.importanceImagePath = importanceImagePath;
   }
   public boolean isEdgeWayEnabled() {

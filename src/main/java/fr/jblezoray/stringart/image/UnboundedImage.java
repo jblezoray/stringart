@@ -31,10 +31,20 @@ public class UnboundedImage implements Image {
     this.unboundedBytes = new int[this.size.nbPixels];
     Arrays.fill(this.unboundedBytes, 0xFF);
   }
-  
+
   public UnboundedImage(ImageSize size, int[] bytes) {
     this.size = size;
     this.unboundedBytes = bytes;
+  }
+  
+  public UnboundedImage(ImageSize size, int[][] bytes) {
+    this.size = size;
+    this.unboundedBytes = new int[size.w*size.h];
+    for (int x=0; x<size.w; x++) {
+      for (int y=0; y<size.h; y++) {
+        this.unboundedBytes[x+y*size.w] = bytes[x][y];
+      }
+    }
   }
   
   /**
@@ -156,6 +166,29 @@ public class UnboundedImage implements Image {
     return IntStream.of(this.unboundedBytes);
   }
 
+  @Override
+  public UnboundedImage minFilter(int threshold) {
+    ImageSize size = this.getSize();
+    int[] pixels = this.unboundedBytes;
+    int[] newPixels = new int[pixels.length];
+    for (int i=0; i<pixels.length; i++) {
+      newPixels[i] = (pixels[i])<threshold 
+          ? threshold : pixels[i]; 
+    }
+    return new UnboundedImage(size, newPixels);
+  }
+
+  public UnboundedImage highPassFilter(int threshold) {
+    ImageSize size = this.getSize();
+    int[] pixels = this.unboundedBytes;
+    int[] newPixels = new int[pixels.length];
+    for (int i=0; i<pixels.length; i++) {
+      newPixels[i] = (pixels[i])<threshold 
+          ? 0 : pixels[i]; 
+    }
+    return new UnboundedImage(size, newPixels);
+  }
+  
   /**
    * for tests only.
    * @return
