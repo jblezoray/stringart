@@ -3,11 +3,10 @@ package fr.jblezoray.stringart;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import fr.jblezoray.stringart.hillclimb.Step;
 import fr.jblezoray.stringart.hillclimb.StringArt;
-import fr.jblezoray.stringart.hillclimb.listeners.DebugListener;
-import fr.jblezoray.stringart.hillclimb.listeners.ImageDifferenceSaverListener;
-import fr.jblezoray.stringart.hillclimb.listeners.ImageSaverListener;
-import fr.jblezoray.stringart.hillclimb.listeners.StringPathSaverListener;
+import fr.jblezoray.stringart.hillclimb.listeners.Listener;
+import static fr.jblezoray.stringart.hillclimb.listeners.ListenerPredicate.*;
 
 public class Main {
   
@@ -15,10 +14,28 @@ public class Main {
     Configuration configuration = new Configuration();
     StringArt stringArt = new StringArt(configuration);
     
-    stringArt.addListener(new DebugListener());
-    stringArt.addListener(new ImageSaverListener(2, configuration.getRenderedImageName()));
-    stringArt.addListener(new ImageDifferenceSaverListener(2, configuration.getRenderedImageDifferenceName()));
-    stringArt.addListener(new StringPathSaverListener(10, configuration.getRenderedStringPathFilename()));
+    stringArt.addListener(Listener
+        .writeTo(System.out)
+        .debugLine()
+        .onEveryRound());
+    
+    stringArt.addListener(Listener
+        .saveToFile(configuration.getRenderedStringPathFilename())
+        .stringPath()
+        .ifIsTrue(everyXRound(10)));
+
+    stringArt.addListener(Listener
+        .saveToFile(configuration.getRenderedImageName())
+        .image(hc -> hc.getRenderedResult())
+        .onAny(afterDelay(2), onStep(Step.FINAL)));
+
+    stringArt.addListener(Listener
+        .saveToFile(configuration.getRenderedImageDifferenceName())
+        .image(hc -> hc.getRenderedResult()
+            .differenceWith(hc.getReferenceImage())
+            .multiplyWith(hc.getImportanceImage()))
+        .onAny(afterDelay(2), onStep(Step.FINAL)));
+
     stringArt.start(new ArrayList<>());
   }
   

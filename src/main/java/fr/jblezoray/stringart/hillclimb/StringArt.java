@@ -9,22 +9,22 @@ import java.util.Set;
 import fr.jblezoray.stringart.Configuration;
 import fr.jblezoray.stringart.core.EdgeImageIO;
 import fr.jblezoray.stringart.edge.DirectedEdge;
-import fr.jblezoray.stringart.hillclimb.listeners.IStringArtAlgoListener;
-import fr.jblezoray.stringart.hillclimb.listeners.Step;
+import fr.jblezoray.stringart.hillclimb.listeners.Listener;
 import fr.jblezoray.stringart.image.ByteImage;
 import fr.jblezoray.stringart.image.HarrisCornerDetection;
 import fr.jblezoray.stringart.image.Image;
-import fr.jblezoray.stringart.image.UnboundedImage;
 
 public class StringArt {
 
   private final ByteImage referenceImg;
   private final Image importanceImg;
   private final Configuration configuration;
+  private final Set<Listener> listeners = new HashSet<>();
 
-  private Set<IStringArtAlgoListener> processingResultListeners = new HashSet<>();
-  
   private int roundCounter =0;
+  
+  private Listener notifyAll = (step, count, hc) ->  
+      listeners.forEach(l -> l.notifyRoundResults(step, count,  hc));
   
   public StringArt(Configuration configuration) throws IOException {
     this.configuration = configuration;
@@ -51,19 +51,14 @@ public class StringArt {
     
     while (downsampleRatio < 1.01) { 
       hc = this.hillClimbFactory(downsampleRatio, edges);
-      this.notifyResultToListeners(Step.SCALE, ++roundCounter, hc.getEdges(), 
-          hc.getRenderedResult(), hc.getReferenceImage(), hc.getImportanceImage(),
-          Optional.empty(), 0, hc.getNumberOfEdgesEvaluated(), hc.getTimeTook());
+      this.notifyAll.notifyRoundResults(Step.SCALE, ++roundCounter, hc);
       
       this.startForScale(hc);
       
       downsampleRatio *= 2.0;
     }
     
-    this.notifyResultToListeners(Step.FINAL, roundCounter, hc.getEdges(),
-        hc.getRenderedResult(), hc.getReferenceImage(), hc.getImportanceImage(),
-        Optional.empty(), hc.getNorm(), hc.getNumberOfEdgesEvaluated(), 
-        hc.getTimeTook());
+    this.notifyAll.notifyRoundResults(Step.FINAL, roundCounter, hc);
   }
   
 
@@ -79,10 +74,7 @@ public class StringArt {
         
         if (modifiedEdge.isPresent()) roundCounter++;
         
-        this.notifyResultToListeners(stepType, roundCounter, hc.getEdges(), 
-            hc.getRenderedResult(), hc.getReferenceImage(), hc.getImportanceImage(), 
-            modifiedEdge, hc.getNorm(), hc.getNumberOfEdgesEvaluated(), 
-            hc.getTimeTook());
+        this.notifyAll.notifyRoundResults(stepType, roundCounter, hc);
         
       } while (modifiedEdge.isPresent());
       
@@ -108,22 +100,9 @@ public class StringArt {
     return new StringArtHillClimb(edges, referenceImgDownsized, 
         importanceImgDownsized, sc);
   }
-
   
-  private void notifyResultToListeners(Step operationDescription, 
-      int iterationNumber, List<DirectedEdge> edges,
-      UnboundedImage currentImage, Image referenceImage, Image importanceImage, 
-      Optional<DirectedEdge> modifiedEdge, double norm,
-      int numberOfEdgesEvaluated, long timeTook) {
-    this.processingResultListeners.forEach(listener -> 
-        listener.notifyRoundResults(operationDescription, iterationNumber, 
-            currentImage, edges, importanceImage, referenceImage, modifiedEdge, norm, 
-            numberOfEdgesEvaluated, timeTook)
-    );
+  public void addListener(Listener listener) {
+    this.listeners.add(listener);
   }
   
-  
-  public void addListener(IStringArtAlgoListener listener) {
-    this.processingResultListeners.add(listener);
-  }
 }
