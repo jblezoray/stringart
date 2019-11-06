@@ -29,10 +29,10 @@ public class StringArt {
   public StringArt(Configuration configuration) throws IOException {
     this.configuration = configuration;
     
-    this.referenceImg = EdgeImageIO.readFile(configuration.getGoalImagePath());
+    this.referenceImg = EdgeImageIO.readFile(configuration.getGoalImage());
 
-    if (configuration.getImportanceImagePath().isPresent()) {
-      var impath = configuration.getImportanceImagePath().get();
+    if (configuration.getImportanceImage().isPresent()) {
+      var impath = configuration.getImportanceImage().get();
       this.importanceImg = EdgeImageIO.readFile(impath);
       
     } else {

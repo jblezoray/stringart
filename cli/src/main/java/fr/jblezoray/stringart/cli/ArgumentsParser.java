@@ -1,72 +1,141 @@
 package fr.jblezoray.stringart.cli;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.IntSupplier;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 class ArgumentsParser {
 
-  private Map<Argument, Optional<String>> parsedArgs;
+  private static final Function<Argument<?>, Supplier<InvalidArgumentException>> VALUE_REQUIRED_EXCEPTION = 
+      (argument) -> () -> new InvalidArgumentException("Argument "+humanReadableNameFor(argument)+" requires a value");
+
+  private static final Supplier<InvalidArgumentException> NAME_OR_POSITION_REQUIRED_EXCEPTION = 
+      () -> new InvalidArgumentException("Every Argument requires either a name or a position.");
+
+  private static final Function<Argument<?>, Supplier<InvalidArgumentException>> FLAG_CAN_NOT_HAVE_PREDICATE = 
+      (argument) -> () -> new InvalidArgumentException("Flag "+humanReadableNameFor(argument)+" can not have a predicate.");
+
+  private static final Function<String, Supplier<InvalidArgumentException>> UNKNOWN_ARGUMENT_EXCEPTION = 
+      (argumentValue) -> () -> new InvalidArgumentException("Unknown argument :"+argumentValue);
   
-  private List<Argument> arguments;
-  private String argsLine;
-  private List<String> splitted; 
+  private final List<Argument<?>> arguments;
+  private final Map<Argument<?>, Optional<?>> parsedArguments;
 
-  public static Map<Argument, Optional<String>> parse(
-      List<Argument> arguments,
-      String argsLine) 
-          throws InvalidArgumentException {
-    var ap = new ArgumentsParser(arguments, argsLine);
-    ap.splitArgsLine();
-    ap.parseToMap();
-    ap.checkFiles();
-    return ap.parsedArgs;
-  }
-
-  private ArgumentsParser(List<Argument> arguments, String argsLine) {
+  public ArgumentsParser(List<Argument<?>> arguments) {
     this.arguments = arguments;
-    this.parsedArgs = new HashMap<>();
-    this.argsLine = Objects.requireNonNullElse(argsLine, "");
+    this.parsedArguments = new HashMap<>();
   }
-
-  private void splitArgsLine() {
-    this.splitted = Arrays.asList(this.argsLine.split("\\s+"));
+  public ArgumentsParser(Argument<?>... arguments) {
+    this.arguments = Arrays.asList(arguments);
+    this.parsedArguments = new HashMap<>();
   }
   
-  private void parseToMap() {
-    Argument optionName = null;
+  public void parse(String argsLine) throws InvalidArgumentException {
+    String argsLineNN = Objects.requireNonNullElse(argsLine, "");
+    parse(argsLineNN.split("\\s+"));
+  }
+
+  public void parse(String[] args) throws InvalidArgumentException {
+    String[] argsNN = Objects.requireNonNullElse(args, new String[0]);
+    parseToMap(Arrays.asList(argsNN));
+    for (Argument<?> argument : parsedArguments.keySet()) {
+      analyze(argument, parsedArguments.get(argument));
+    }
+  }
+  
+  @SuppressWarnings("unchecked")
+  private <A> void analyze(Argument<A> argument, Optional<?> value) {
+    checkPredicates(argument, (Optional<A>) value);
+    consume(argument, (Optional<A>) value);
+  }
+  
+  private <A> void checkPredicates(Argument<A> argument, Optional<A> value) {
+    Map<Predicate<A>, String> predicates = argument.getPredicates();
+    if (argument.isFlag() && !predicates.isEmpty())
+      throw FLAG_CAN_NOT_HAVE_PREDICATE.apply(argument).get();
+    
+    for (Predicate<A> predicate : predicates.keySet()) {
+      A valueUnboxed = requireValue(argument, value);
+      if (!predicate.test(valueUnboxed)) { 
+        String errorMessage = predicates.get(predicate);
+        throw new InvalidArgumentException(errorMessage);
+      }
+    }
+  }
+
+  private <A> A requireValue(Argument<A> argument, Optional<A> value) {
+    return value.orElseThrow(VALUE_REQUIRED_EXCEPTION.apply(argument)); 
+  }
+
+  private static String humanReadableNameFor(Argument<?> argument) {
+    return argument.getArgumentName().orElse(
+        Integer.toString(
+            argument
+                .getArgumentPosition()
+                .orElseThrow(NAME_OR_POSITION_REQUIRED_EXCEPTION)
+        )
+    );
+  }
+  
+  private <A> void consume(Argument<A> argument, Optional<A> value) {
+    A valueUnboxed = requireValue(argument, value);
+    argument.getConsumer().accept(valueUnboxed);
+  }
+
+  private void parseToMap(List<String> splitted) {
+    Argument<?> argument = null;
+    AtomicInteger currentPosition = new AtomicInteger(0);
     for (String element : splitted) {
-      
-      Optional<Argument> asValidOptionName = asArgument(element);
-      
-      if (optionName != null) {
-        this.parsedArgs.put(optionName, Optional.of(element));
-        optionName = null;
+      if (argument != null) {
+        parsedArguments.put(argument, Optional.of(element));
+        argument = null;
         
-      } else if (asValidOptionName.isPresent()){
-        if (!asValidOptionName.get().isHasValue()) {
-          this.parsedArgs.put(asValidOptionName.get(), Optional.empty());
-        } else { 
-          optionName = asValidOptionName.get();
+      } else {
+        Optional<Argument<?>> asValidOptionName = asArgument(element);
+        if (asValidOptionName.isPresent()){
+          if (asValidOptionName.get().isFlag()) {
+            parsedArguments.put(asValidOptionName.get(), Optional.of(true));
+            
+          } else { 
+            // put appart to get value on next round of the for loop.
+            argument = asValidOptionName.get();
+          }
+          
+        } else {
+          int position = currentPosition.getAndIncrement();
+          Optional<Argument<?>> arg = arguments.stream()
+              .filter(a -> position == a.getArgumentPosition().orElseGet(() -> {return -1;}))
+              .findFirst();
+          if (arg.isEmpty()) throw UNKNOWN_ARGUMENT_EXCEPTION.apply(element).get();
+          parsedArguments.put(arg.get(), Optional.of(element));
         }
       }
       
     }
     
-    if (optionName!=null)
-      this.parsedArgs.put(optionName, Optional.empty());
+    if (argument!=null) {
+      if (argument.isFlag())
+        parsedArguments.put(argument, Optional.empty());
+      else 
+        throw VALUE_REQUIRED_EXCEPTION.apply(argument).get();
+    }
   }
 
-  private Optional<Argument> asArgument(String potentialArgName) {
-    Optional<Argument> argument;
+  private Optional<Argument<?>> asArgument(String potentialArgName) {
+    Optional<Argument<?>> argument;
     if (potentialArgName.startsWith("-")) {
       String asArgName = potentialArgName.substring(1);
       argument = arguments.stream()
-            .filter(arg -> arg.getArgumentName().equals(asArgName))
+            .filter(arg -> arg.getArgumentName().isPresent())
+            .filter(arg -> arg.getArgumentName().get().equals(asArgName))
             .findFirst();
     } else {
       argument = Optional.empty();
@@ -74,20 +143,4 @@ class ArgumentsParser {
     return argument;
   }
 
-  private void checkFiles() throws InvalidArgumentException {
-    for (Argument arg : this.parsedArgs.keySet()) {
-      if (!arg.isExpectFile()) continue;
-      
-      if (this.parsedArgs.get(arg).isEmpty())
-        throw new InvalidArgumentException("Argument "+arg.getArgumentName()+" expects a file value.");
-      
-      String argValue = this.parsedArgs.get(arg).get();
-      var file = new File(argValue);
-      if (arg.isFileExists() && !file.exists()) 
-        throw new InvalidArgumentException("File "+argValue+" does not exist.");
-      else if (!arg.isFileExists() && file.exists()) 
-        throw new InvalidArgumentException("File "+argValue+" already exists.");
-    }
-  }
-  
 }

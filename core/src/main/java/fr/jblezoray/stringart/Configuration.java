@@ -1,5 +1,6 @@
 package fr.jblezoray.stringart;
 
+import java.io.File;
 import java.util.Optional;
 
 import fr.jblezoray.stringart.hillclimb.StringCharacteristics.Shape;
@@ -12,7 +13,7 @@ public class Configuration {
    * The prurpose of the program is to produce a string image that has the 
    * smallest difference with this image. 
    */
-  private String goalImagePath = "test2/einstein2.png";
+  private File goalImage = new File("samples/test2/einstein2.png");
 
   /**
    * The importance image.
@@ -26,26 +27,10 @@ public class Configuration {
    * 
    * if not present, the approximation image will be determined automatically.
    */
-  private Optional<String> importanceImagePath = 
-      //Optional.of("test2/einstein_features2.png");
+  private Optional<File> importanceImage = 
+//      Optional.of(new File("samples/test2/einstein_features2.png"));
       Optional.empty();
-    
-  /**
-   * Filename for the result.  
-   */
-  private String renderedImageName = "_rendering.png";
-
-  /**
-   * Filename for saving a pixel to pixel difference between the result and the 
-   * reference image.  
-   */
-  private String renderedImageDifferenceName = "_diff.png";
-
-  /** 
-   * Filename for the saving the string path. 
-   */
-  private String renderedStringPathFilename = "_stringPath.txt";
-  
+      
   /** 
    * Enable to let the algorithm distinguish between the string going clockwise 
    * or anticlockwise. 
@@ -67,17 +52,17 @@ public class Configuration {
   private Shape shape = Shape.CIRCLE;
   
   
-  public String getGoalImagePath() {
-    return goalImagePath;
+  public File getGoalImage() {
+    return goalImage;
   }
-  public void setGoalImagePath(String goalImagePath) {
-    this.goalImagePath = goalImagePath;
+  public void setGoalImage(File goalImage) {
+    this.goalImage = goalImage;
   }
-  public Optional<String> getImportanceImagePath() {
-    return importanceImagePath;
+  public Optional<File> getImportanceImage() {
+    return importanceImage;
   }
-  public void setImportanceImagePath(Optional<String> importanceImagePath) {
-    this.importanceImagePath = importanceImagePath;
+  public void setImportanceImage(Optional<File> importanceImage) {
+    this.importanceImage = importanceImage;
   }
   public boolean isEdgeWayEnabled() {
     return edgeWayEnabled;
@@ -114,24 +99,6 @@ public class Configuration {
   }
   public void setMinNailsDiff(int minNailsDiff) {
     this.minNailsDiff = minNailsDiff;
-  }
-  public String getRenderedImageName() {
-    return renderedImageName;
-  }
-  public void setRenderedImageName(String renderedImageName) {
-    this.renderedImageName = renderedImageName;
-  }
-  public String getRenderedImageDifferenceName() {
-    return renderedImageDifferenceName;
-  }
-  public void setRenderedImageDifferenceName(String renderedImageDifferenceName) {
-    this.renderedImageDifferenceName = renderedImageDifferenceName;
-  }
-  public String getRenderedStringPathFilename() {
-    return renderedStringPathFilename;
-  }
-  public void setRenderedStringPathFilename(String renderedStringPathFilename) {
-    this.renderedStringPathFilename = renderedStringPathFilename;
   }
   public Shape getShape() {
     return shape;

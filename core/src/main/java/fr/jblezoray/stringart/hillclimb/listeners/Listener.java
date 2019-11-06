@@ -33,14 +33,14 @@ public interface Listener {
     ListenerPredicateBuilder debugLine();
   }
   
-  static FileSaverListenerBuilder saveToFile(String filename) {
+  static FileSaverListenerBuilder saveToFile(File file) {
     return new FileSaverListenerBuilder() {
 
       public ListenerPredicateBuilder image(Function<StringArtHillClimb, Image> imageSupplier) {
         return (step, it, hc) -> {
           try {
             Image toSave = imageSupplier.apply(hc);
-            EdgeImageIO.writeToFile(toSave, new File(filename));
+            EdgeImageIO.writeToFile(toSave, file);
             
           } catch (IOException e) {
             throw new RuntimeException("Cannot create image : " + e.getMessage());
@@ -50,8 +50,7 @@ public interface Listener {
 
       public ListenerPredicateBuilder stringPath() {
         return (step, it, hc) -> {
-            File f = new File(filename);
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(f))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
               for (DirectedEdge e : hc.getEdges()) {
                 String representation = 
                      e.getEdge().getNailA()+(e.getEdge().isNailAClockwise()?"+":"-")+

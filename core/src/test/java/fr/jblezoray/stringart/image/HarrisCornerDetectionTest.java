@@ -15,7 +15,7 @@ public class HarrisCornerDetectionTest {
   public void test() throws IOException {
     Configuration configuration = new Configuration();  
 
-    ByteImage bi = EdgeImageIO.readFile(configuration.getGoalImagePath());
+    ByteImage bi = EdgeImageIO.readFile(configuration.getGoalImage());
 //    bi = bi.downsample(0.1);
     
     HarrisCornerDetection harris = new HarrisCornerDetection();
