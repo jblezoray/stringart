@@ -8,8 +8,8 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>core</module>
-    <module>cli</module>
+    <module>core/</module>
+    <module>cli/</module>
   </modules>
 
   <properties>
@@ -37,12 +37,15 @@
   </dependencyManagement>
 
   <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.8.2</version>
+        <configuration>
+          <append>true</append>
+          <destFile>${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml</destFile>
+        </configuration>
         <executions>
           <execution>
             <goals>
