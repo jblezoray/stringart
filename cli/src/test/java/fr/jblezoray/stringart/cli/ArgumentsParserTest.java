@@ -136,6 +136,17 @@ class ArgumentsParserTest {
     
     Assertions.assertEquals(Map.of("a", "aa", "b", "bb", "c", true, "d", false), resultHandler);
   }
+  
+  @Test
+  public void argumentParser_check_requirement() throws InvalidArgumentException {
+    List<Argument<?>> arguments = Arrays.asList(
+        Argument.build("").withName("a").withRequirement((a)->false, "Boom").andDo((a) -> {})
+        );
+
+    Assertions.assertThrows(InvalidArgumentException.class, () -> {
+      new ArgumentsParser(arguments).parse("-a");
+    });
+  }
 
   
 }

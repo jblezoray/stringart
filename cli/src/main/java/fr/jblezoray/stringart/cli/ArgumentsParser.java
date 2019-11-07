@@ -25,7 +25,10 @@ class ArgumentsParser {
       (argument) -> () -> new InvalidArgumentException("Flag "+humanReadableNameFor(argument)+" can not have a predicate.");
 
   private static final Function<String, Supplier<InvalidArgumentException>> UNKNOWN_ARGUMENT_EXCEPTION = 
-      (argumentValue) -> () -> new InvalidArgumentException("Unknown argument :"+argumentValue);
+      (argumentValue) -> () -> new InvalidArgumentException("Unknown argument : "+argumentValue);
+
+  private static final Function<Argument<?>, Supplier<InvalidArgumentException>> MISSING_VALUE_EXCEPTION = 
+      (argument) -> () -> new InvalidArgumentException("Missing argument : "+humanReadableNameFor(argument));;
   
   private final List<Argument<?>> arguments;
   private final Map<Argument<?>, Optional<?>> parsedArguments;
@@ -48,6 +51,7 @@ class ArgumentsParser {
     String[] argsNN = Objects.requireNonNullElse(args, new String[0]);
     parseToMap(Arrays.asList(argsNN));
     completeWithDefaultValues();
+    checkMissingAttributes();
     for (Argument<?> argument : parsedArguments.keySet()) {
       analyze(argument, parsedArguments.get(argument));
     }
@@ -60,14 +64,14 @@ class ArgumentsParser {
   }
   
   private <A> void checkPredicates(Argument<A> argument, Optional<A> value) {
-    Map<Predicate<A>, String> predicates = argument.getPredicates();
-    if (argument.isFlag() && !predicates.isEmpty())
+    Map<Predicate<A>, String> requirements = argument.getRequirements();
+    if (argument.isFlag() && !requirements.isEmpty())
       throw FLAG_CAN_NOT_HAVE_PREDICATE.apply(argument).get();
     
-    for (Predicate<A> predicate : predicates.keySet()) {
+    for (Predicate<A> predicate : requirements.keySet()) {
       A valueUnboxed = requireValue(argument, value);
       if (!predicate.test(valueUnboxed)) { 
-        String errorMessage = predicates.get(predicate);
+        String errorMessage = requirements.get(predicate);
         throw new InvalidArgumentException(errorMessage);
       }
     }
@@ -79,12 +83,12 @@ class ArgumentsParser {
 
   private static String humanReadableNameFor(Argument<?> argument) {
     return argument.getArgumentName().orElse(
-        Integer.toString(
+        "at position " + Integer.toString(
             argument
                 .getArgumentPosition()
                 .orElseThrow(NAME_OR_POSITION_REQUIRED_EXCEPTION)
         )
-    );
+    ) + " (" + argument.getDescription() + ")";
   }
   
   private <A> void consume(Argument<A> argument, Optional<A> value) {
@@ -139,6 +143,12 @@ class ArgumentsParser {
         .filter((arg) -> this.parsedArguments.get(arg)==null)
         .filter((arg) -> arg.getDefaultValue().isPresent())
         .forEach((arg) -> this.parsedArguments.put(arg, arg.getDefaultValue()));
+  }
+  
+  private void checkMissingAttributes() {
+    this.arguments.stream()
+        .filter((arg) -> this.parsedArguments.get(arg)==null)
+        .forEach((arg) -> {throw MISSING_VALUE_EXCEPTION.apply(arg).get();});
   }
 
   private Optional<Argument<?>> asArgument(String potentialArgName) {

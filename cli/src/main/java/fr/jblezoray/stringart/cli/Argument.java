@@ -21,7 +21,7 @@ public class Argument<A> {
   private List<String> aliases = Collections.emptyList();
   private Supplier<A> defaultValueSupplier = null;
   private Consumer<A> consumer = null;
-  private Map<Predicate<A>, String> predicates = new HashMap<>();
+  private Map<Predicate<A>, String> requirement = new HashMap<>();
   private boolean isFlag = false;
 
   private Argument() {}
@@ -72,8 +72,8 @@ public class Argument<A> {
       return this;
     }
 
-    public ArgumentBuilder<B> withRequiredCondition(Predicate<B> predicate, String errorMessage) {
-      this.ongoing.predicates.put(predicate, errorMessage); 
+    public ArgumentBuilder<B> withRequirement(Predicate<B> requirement, String errorMessage) {
+      this.ongoing.requirement.put(requirement, errorMessage); 
       return this;
     }
 
@@ -81,7 +81,7 @@ public class Argument<A> {
       this.ongoing.consumer = consumer;
       // ensure immutability of mutables.
       this.ongoing.aliases = Collections.unmodifiableList(this.ongoing.aliases);
-      this.ongoing.predicates = Collections.unmodifiableMap(this.ongoing.predicates);
+      this.ongoing.requirement = Collections.unmodifiableMap(this.ongoing.requirement);
       if (!(this.ongoing.argumentName.isPresent() ^ this.ongoing.argumentPosition.isPresent())) {
         throw new ArgumentDefinitionException("An argument must define either a name or a position.");
       }
@@ -114,8 +114,8 @@ public class Argument<A> {
     return description;
   }
 
-  public Map<Predicate<A>, String> getPredicates() {
-    return predicates;
+  public Map<Predicate<A>, String> getRequirements() {
+    return requirement;
   }
   
   @Override
