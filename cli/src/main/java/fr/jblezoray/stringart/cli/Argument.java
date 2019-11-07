@@ -47,9 +47,9 @@ public class Argument<A> {
     }
 
     @SuppressWarnings("unchecked")
-    public <BOOL extends Boolean> ArgumentBuilder<? extends BOOL> asFlag() {
+    public ArgumentBuilder<Boolean> asFlag() {
       this.ongoing.isFlag = true;
-      return (ArgumentBuilder<BOOL>)this;
+      return (ArgumentBuilder<Boolean>)this;
     }
 
     public ArgumentBuilder<B> orDefault(Supplier<B> defaultValueSupplier) {

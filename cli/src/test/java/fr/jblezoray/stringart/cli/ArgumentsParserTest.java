@@ -21,7 +21,7 @@ class ArgumentsParserTest {
     var arg = Argument.<String>build("").withName("a").andDo(resultHandler::set);
     
     new ArgumentsParser(Collections.singletonList(arg))
-        .parse("-a aa bb -b toto");
+        .parse("-a aa");
 
     Assertions.assertEquals("aa", resultHandler.toString());
   }
@@ -60,7 +60,7 @@ class ArgumentsParserTest {
     var arg = Argument.build("").withName("b").asFlag().andDo(resultHandler::set);
     
     new ArgumentsParser(Collections.singletonList(arg))
-        .parse("-a aa bb -b toto");
+        .parse("-b");
 
     Assertions.assertEquals(true, resultHandler.get());
   }
@@ -98,12 +98,43 @@ class ArgumentsParserTest {
   public void argumentParser_single_dash() throws InvalidArgumentException {
     var resultHandler = new HashMap<>();
     List<Argument<?>> arguments = Arrays.asList(
+        Argument.build("").atPosition(0).andDo((x) -> {}),
+        Argument.build("").atPosition(1).andDo((x) -> {}),
         Argument.build("").withName("a").andDo((a) -> resultHandler.put("a", a)),
         Argument.build("").withName("b").asFlag().andDo((b) -> resultHandler.put("b", b)));
     
     new ArgumentsParser(arguments).parse("- -a - -b -");
     
     Assertions.assertEquals(Map.of("a", "-", "b", true), resultHandler);
+  }
+
+
+  @Test
+  public void argumentParser_flag_without_boolean() throws InvalidArgumentException {
+    var resultHandler = new HashMap<>();
+    List<Argument<?>> arguments = Arrays.asList(
+        Argument.<String>build("").withName("a").asFlag().andDo((a) -> resultHandler.put("a", a)),
+        Argument.build("").withName("b").asFlag().andDo((b) -> resultHandler.put("b", b))
+        );
+    
+    new ArgumentsParser(arguments).parse("-a -b");
+    
+    Assertions.assertEquals(Map.of("a", true, "b", true), resultHandler);
+  }
+  
+  @Test
+  public void argumentParser_default_values() throws InvalidArgumentException {
+    var resultHandler = new HashMap<>();
+    List<Argument<?>> arguments = Arrays.asList(
+        Argument.build("").withName("a").orDefault(()->"aa").andDo((a) -> resultHandler.put("a", a)),
+        Argument.build("").atPosition(0).orDefault(()->"bb").andDo((b) -> resultHandler.put("b", b)),
+        Argument.build("").withName("c").asFlag().orDefault(() -> true).andDo((c) -> resultHandler.put("c", c)),
+        Argument.build("").withName("d").asFlag().orDefault(() ->false).andDo((d) -> resultHandler.put("d", d))
+        );
+    
+    new ArgumentsParser(arguments).parse("");
+    
+    Assertions.assertEquals(Map.of("a", "aa", "b", "bb", "c", true, "d", false), resultHandler);
   }
 
   

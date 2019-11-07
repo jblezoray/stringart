@@ -2,6 +2,7 @@ package fr.jblezoray.stringart.cli;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +47,7 @@ class ArgumentsParser {
   public void parse(String[] args) throws InvalidArgumentException {
     String[] argsNN = Objects.requireNonNullElse(args, new String[0]);
     parseToMap(Arrays.asList(argsNN));
+    completeWithDefaultValues();
     for (Argument<?> argument : parsedArguments.keySet()) {
       analyze(argument, parsedArguments.get(argument));
     }
@@ -94,6 +96,9 @@ class ArgumentsParser {
     Argument<?> argument = null;
     AtomicInteger currentPosition = new AtomicInteger(0);
     for (String element : splitted) {
+      if (element==null || element.length()==0) {
+        continue;
+      }
       if (argument != null) {
         parsedArguments.put(argument, Optional.of(element));
         argument = null;
@@ -127,6 +132,13 @@ class ArgumentsParser {
       else 
         throw VALUE_REQUIRED_EXCEPTION.apply(argument).get();
     }
+  }
+  
+  private void completeWithDefaultValues() {
+    this.arguments.stream()
+        .filter((arg) -> this.parsedArguments.get(arg)==null)
+        .filter((arg) -> arg.getDefaultValue().isPresent())
+        .forEach((arg) -> this.parsedArguments.put(arg, arg.getDefaultValue()));
   }
 
   private Optional<Argument<?>> asArgument(String potentialArgName) {
