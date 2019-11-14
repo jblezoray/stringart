@@ -1,4 +1,4 @@
-package fr.jblezoray.stringart.cli;
+package fr.jblezoray.stringart.cli.argumentparser;
 
 public class InvalidArgumentException extends RuntimeException {
 

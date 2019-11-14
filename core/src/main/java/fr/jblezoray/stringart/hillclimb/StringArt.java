@@ -16,19 +16,22 @@ import fr.jblezoray.stringart.image.Image;
 
 public class StringArt {
 
-  private final ByteImage referenceImg;
-  private final Image importanceImg;
   private final Configuration configuration;
-  private final Set<Listener> listeners = new HashSet<>();
+  
+  private ByteImage referenceImg;
+  private Image importanceImg;
+  private Set<Listener> listeners = new HashSet<>();
 
   private int roundCounter =0;
   
   private Listener notifyAll = (step, count, hc) ->  
       listeners.forEach(l -> l.notifyRoundResults(step, count,  hc));
   
-  public StringArt(Configuration configuration) throws IOException {
+  public StringArt(Configuration configuration) {
     this.configuration = configuration;
-    
+  }
+  
+  private void init() throws IOException {
     this.referenceImg = EdgeImageIO.readFile(configuration.getGoalImage());
 
     if (configuration.getImportanceImage().isPresent()) {
@@ -44,7 +47,9 @@ public class StringArt {
     }
   }
 
-  public void start(List<DirectedEdge> edges) {
+  public void start(List<DirectedEdge> edges) throws IOException {
+    init();
+    
     double downsampleRatio = 1.0 / Math.pow(2.0, 6);
     
     StringArtHillClimb hc = null;
@@ -62,7 +67,9 @@ public class StringArt {
   }
   
 
-  public void startForScale(StringArtHillClimb hc) {
+  public void startForScale(StringArtHillClimb hc) throws IOException {
+    init(); 
+    
     Step stepType = Step.ADD;
     Optional<DirectedEdge> modifiedEdge;
     int prevRoundCounter;
