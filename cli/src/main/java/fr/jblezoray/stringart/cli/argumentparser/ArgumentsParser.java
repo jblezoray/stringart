@@ -91,7 +91,6 @@ public class ArgumentsParser {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .filter(pa -> position == pa.getArgumentPosition())
-            .peek(a -> System.out.println(a + "/" + position + "="+a.getArgumentPosition()))
             .findFirst()
             .orElseThrow(UNKNOWN_ARGUMENT_EXCEPTION.apply(element));
         

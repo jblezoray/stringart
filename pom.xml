@@ -36,16 +36,27 @@
     </dependencies>
   </dependencyManagement>
 
+
+
   <build>
     <plugins>
+    
+      <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.19.1</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.junit.platform</groupId>
+                  <artifactId>junit-platform-surefire-provider</artifactId>
+                  <version>1.1.0</version>
+              </dependency>
+          </dependencies>
+      </plugin>
+      
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.8.2</version>
-        <configuration>
-          <append>true</append>
-          <destFile>${maven.multiModuleProjectDirectory}/target/site/jacoco/jacoco.xml</destFile>
-        </configuration>
         <executions>
           <execution>
             <goals>

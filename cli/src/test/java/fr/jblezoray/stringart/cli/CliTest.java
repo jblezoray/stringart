@@ -46,7 +46,6 @@ public class CliTest {
     cli.start(argsArray);
     
     // then
-    this.exceptionThrown.printStackTrace();
     Assertions.assertNull(this.exceptionThrown);
   }
   
@@ -61,7 +60,6 @@ public class CliTest {
     cli.start(argsArray);
     
     // then
-    this.exceptionThrown.printStackTrace();
     Assertions.assertNull(this.exceptionThrown);
   }
 }
