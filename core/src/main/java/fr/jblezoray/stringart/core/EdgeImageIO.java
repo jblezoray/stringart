@@ -44,6 +44,9 @@ public class EdgeImageIO {
    */
   public static ByteImage readFile(File imageFile) throws IOException {
     BufferedImage image = ImageIO.read(imageFile);
+    if (image == null) {
+      throw new IOException("can not read image "+imageFile.getAbsolutePath());
+    }
     return convertToByteImage(image);
   }
 

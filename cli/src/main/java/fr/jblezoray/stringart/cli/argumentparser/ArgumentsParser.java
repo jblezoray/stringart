@@ -91,8 +91,10 @@ public class ArgumentsParser {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .filter(pa -> position == pa.getArgumentPosition())
+            .peek(a -> System.out.println(a + "/" + position + "="+a.getArgumentPosition()))
             .findFirst()
             .orElseThrow(UNKNOWN_ARGUMENT_EXCEPTION.apply(element));
+        
         readArguments.put(arg, Optional.of(element));
       }
     }
@@ -108,12 +110,24 @@ public class ArgumentsParser {
     String asArgName = potentialArgName.substring(1);
     return arguments.stream()
           .filter(arg -> 
-              arg.getName().equals(asArgName) ||
-              asNamedArgument(arg)
+              arg.getName().equals(asArgName)
+              || asFlagArgument(arg)
+                  .map(a->a.getAliases().contains(asArgName))
+                  .orElse(false)
+              || asNamedArgument(arg)
                   .map(a->a.getAliases().contains(asArgName))
                   .orElse(false)
           )
           .findFirst();
+  }
+
+  @SuppressWarnings("rawtypes")
+  private static Optional<FlagArgument> asFlagArgument(Argument arg) {
+    try {
+      return Optional.of((FlagArgument)arg);
+    } catch (ClassCastException e) {
+      return Optional.empty();
+    }
   }
 
   @SuppressWarnings("rawtypes")

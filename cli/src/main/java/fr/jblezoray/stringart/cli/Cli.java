@@ -12,11 +12,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import fr.jblezoray.stringart.Configuration;
-import fr.jblezoray.stringart.cli.argumentparser.types.FlagArgument.FlagArgumentBuilder;
-import fr.jblezoray.stringart.cli.argumentparser.types.PositionArgument.PositionArgumentBuilder;
-import fr.jblezoray.stringart.cli.argumentparser.types.NamedArgument.NamedArgumentBuilder;
 import fr.jblezoray.stringart.cli.argumentparser.ArgumentsParser;
 import fr.jblezoray.stringart.cli.argumentparser.InvalidArgumentException;
+import fr.jblezoray.stringart.cli.argumentparser.types.FlagArgument.FlagArgumentBuilder;
+import fr.jblezoray.stringart.cli.argumentparser.types.NamedArgument.NamedArgumentBuilder;
+import fr.jblezoray.stringart.cli.argumentparser.types.PositionArgument.PositionArgumentBuilder;
 import fr.jblezoray.stringart.hillclimb.Step;
 import fr.jblezoray.stringart.hillclimb.StringArt;
 import fr.jblezoray.stringart.hillclimb.listeners.Listener;
@@ -24,9 +24,19 @@ import fr.jblezoray.stringart.hillclimb.listeners.Listener;
 public class Cli {
 
   private final Configuration configuration = new Configuration();
+  private Consumer<Exception> fatalErrorHandler = exception -> {
+    System.err.println(exception.getMessage());
+    System.exit(-1);
+  };
+  private Boolean quietMode;
+  private File renderedImage;
+  private Optional<File> renderedImageDifference;
+  private Optional<File> renderedStringPath;
+  
+  private Function<Configuration, StringArt> stringArtBuilder; 
+  private StringArt stringArt;
   
   private final ArgumentsParser argumentsParser = new ArgumentsParser(
-      
       new FlagArgumentBuilder()
           .withName("quiet")
           .withAliases("q")
@@ -57,7 +67,7 @@ public class Cli {
       new FlagArgumentBuilder()
           .withName("disableEdgeWay")
           .withDescription("disables the rendering of the way the string goes around edges. "
-              + "Enables a ~4x faster rendering, but less precise.")
+              + "Enables a ~4x faster rendering, but is less precise.")
           .orDefault(() -> false)
           .andDo(disableEdgeWay -> configuration.setEdgeWayEnabled(!disableEdgeWay))
           .build(),
@@ -97,36 +107,25 @@ public class Cli {
           
   );
 
-  private final Function<Configuration, StringArt> stringArtSupplier;
-  private final Consumer<Exception> fatalErrorHandler;
-  
-  private Boolean quietMode;
-  private File renderedImage;
-  private Optional<File> renderedImageDifference;
-  private Optional<File> renderedStringPath;
-  
-  private StringArt stringArt;
-  
-  public Cli() {
-    this(
-        (configuration) -> new StringArt(configuration), 
-        (exception) -> {
-          System.err.println(exception.getMessage());
-          System.exit(-1);
-        });
+  public Cli(Function<Configuration, StringArt> stringArtBuilder) {
+    this.stringArtBuilder = stringArtBuilder;
   }
-
-  Cli(Function<Configuration, StringArt> stringArtSupplier,
-      Consumer<Exception> fatalErrorHandler) {
-    this.stringArtSupplier = stringArtSupplier;
+  
+  public void setFatalErrorHandler(Consumer<Exception> fatalErrorHandler) {
     this.fatalErrorHandler = fatalErrorHandler;
   }
 
   public void start(String[] args) {
     try {
       this.argumentsParser.parse(args);
-      this.stringArt = this.stringArtSupplier.apply(configuration);
-      configureListeners();
+      
+      this.stringArt = this.stringArtBuilder.apply(configuration);
+      
+      configureDebugListener();
+      configureRenderedImageListener();
+      configureDiffImageListener();
+      configureRenderedStringPathListener();
+      
       this.stringArt.start(new ArrayList<>());
       
     } catch (IOException | InvalidArgumentException e) {
@@ -134,33 +133,43 @@ public class Cli {
     }  
   }
   
-  private void configureListeners() {
+  private void configureDebugListener() {
     if (!quietMode) {
-      stringArt.addListener(Listener
+      var l = Listener
           .writeTo(System.out)
           .debugLine()
-          .onEveryRound());
+          .onEveryRound();
+      stringArt.addListener(l);
     }
-    
-    stringArt.addListener(Listener
+  }
+  
+  private void configureRenderedImageListener() {
+    var l = Listener
         .saveToFile(renderedImage)
         .stringPath()
-        .ifIsTrue(everyXRound(10)));
+        .ifIsTrue(everyXRound(10));
+    stringArt.addListener(l);
+  }
 
+  private void configureDiffImageListener() {
     if (renderedImageDifference.isPresent()) {
-      stringArt.addListener(Listener
+      var l = Listener
           .saveToFile(renderedImageDifference.get())
           .image(hc -> hc.getRenderedResult())
-          .onAny(afterDelay(2), onStep(Step.FINAL)));
+          .onAny(afterDelay(2), onStep(Step.FINAL));
+      stringArt.addListener(l);
     }
+  }
 
+  private void configureRenderedStringPathListener() {
     if (renderedStringPath.isPresent()) {
-      stringArt.addListener(Listener
+      var l = Listener
           .saveToFile(renderedStringPath.get())
           .image(hc -> hc.getRenderedResult()
               .differenceWith(hc.getReferenceImage())
               .multiplyWith(hc.getImportanceImage()))
-          .onAny(afterDelay(2), onStep(Step.FINAL)));
+          .onAny(afterDelay(2), onStep(Step.FINAL));
+      stringArt.addListener(l);
     }
   }
 
