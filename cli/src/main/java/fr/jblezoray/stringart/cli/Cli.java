@@ -26,8 +26,9 @@ public class Cli {
   private final Configuration configuration = new Configuration();
   private Consumer<Exception> fatalErrorHandler = exception -> {
     System.err.println(exception.getMessage());
-    System.exit(-1);
   };
+  
+  private Boolean printHelp;
   private Boolean quietMode;
   private File renderedImage;
   private Optional<File> renderedImageDifference;
@@ -37,6 +38,14 @@ public class Cli {
   private StringArt stringArt;
   
   private final ArgumentsParser argumentsParser = new ArgumentsParser(
+      new FlagArgumentBuilder()
+          .withName("help")
+          .withAliases("h")
+          .withDescription("print help")
+          .orDefault(() -> false)
+          .andDo(h -> this.printHelp = h)
+          .build(),
+          
       new FlagArgumentBuilder()
           .withName("quiet")
           .withAliases("q")
@@ -116,9 +125,23 @@ public class Cli {
   }
 
   public void start(String[] args) {
+    
     try {
       this.argumentsParser.parse(args);
-      
+    } catch (InvalidArgumentException ie) {
+      this.fatalErrorHandler.accept(ie);
+      var help = this.argumentsParser.buildHelp();
+      System.out.print(help);
+      System.exit(-1);
+    }
+    
+    if (printHelp) {
+      String help = this.argumentsParser.buildHelp();
+      System.out.print(help);
+      System.exit(0);
+    }
+
+    try {
       this.stringArt = this.stringArtBuilder.apply(configuration);
       
       configureDebugListener();
@@ -128,8 +151,9 @@ public class Cli {
       
       this.stringArt.start(new ArrayList<>());
       
-    } catch (IOException | InvalidArgumentException e) {
+    } catch (IOException e) {
       this.fatalErrorHandler.accept(e);
+      System.exit(-1);
     }  
   }
   

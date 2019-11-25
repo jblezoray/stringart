@@ -42,6 +42,48 @@ public class ArgumentsParser {
     this.parsedArguments = new HashMap<>();
   }
 
+  public String buildHelp() {
+    String posArguments = "";
+    for (Argument<?> arg : arguments) {
+      if (arg instanceof PositionArgument<?>) {
+        posArguments += " <"+arg.getName()+">";
+      }
+    }
+    StringBuilder help = new StringBuilder();
+    help.append("Usage: \n");
+    help.append("    java -jar <jar_file> [flags] [options]"+posArguments+"\n");
+    help.append("\n");
+    help.append("Arguments: \n");
+    for (Argument<?> arg : arguments) {
+      if (arg instanceof PositionArgument<?>) {
+        var pa = (PositionArgument<?>) arg;
+        var s = String.format("   %-21s %s\n", "<"+pa.getName()+">", pa.getDescription());
+        help.append(s);
+      }
+    }
+    help.append("\n");
+    help.append("Flags: \n");
+    for (Argument<?> arg : arguments) {
+      if (arg instanceof FlagArgument) {
+        var fa = (FlagArgument) arg;
+        String aliases = fa.getAliases().stream().reduce("", (a,b) -> a+", -"+b);
+        var s = String.format("   -%-20s %s\n", fa.getName()+aliases, fa.getDescription());
+        help.append(s);
+      }
+    }
+    help.append("\n");
+    help.append("Options: \n");
+    for (Argument<?> arg : arguments) {
+      if (arg instanceof NamedArgument<?>) {
+        var na = (NamedArgument<?>) arg;
+        String aliases = na.getAliases().stream().reduce("", (a,b) -> a+", -"+b);
+        var s = String.format("   -%-20s %s\n", na.getName()+aliases, na.getDescription());
+        help.append(s);
+      }
+    }
+    return help.toString();
+  }
+  
   public void parse(String argsLine) throws InvalidArgumentException {
     parse(argsLine==null||argsLine.isBlank() ? null : argsLine.trim().split("\\s+"));
   }
@@ -156,7 +198,6 @@ public class ArgumentsParser {
     }
   }
   
-  
   private void parseArguments() {
     for (Map.Entry<Argument<?>, Optional<String>> entry : readArguments.entrySet()) {
       Optional<ReadableArgument<?>> readableArg = asReadableArgument(entry.getKey());
@@ -216,5 +257,6 @@ public class ArgumentsParser {
       throw VALUE_REQUIRED_EXCEPTION.apply(argument).get();
     }
   }
+
 
 }
