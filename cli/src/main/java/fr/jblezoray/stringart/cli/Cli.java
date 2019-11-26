@@ -86,8 +86,8 @@ public class Cli {
           .withAliases("o")
           .withDescription("Output file for rendering the graphical result")
           .withReader(s->new File(s))
-          .orDefault(() -> new File("rendering.png"))
-          .withRequirement(f -> !f.exists(), "The rendering output file already exists.")
+          .orDefault(() -> new File("output.png"))
+          .withRequirement(f -> !f.exists(), "The output image file already exists.")
           .andDo(f -> this.renderedImage = f)
           .build(),
           
@@ -170,8 +170,8 @@ public class Cli {
   private void configureRenderedImageListener() {
     var l = Listener
         .saveToFile(renderedImage)
-        .stringPath()
-        .ifIsTrue(everyXRound(10));
+        .image(hc -> hc.getRenderedResult())
+        .onAny(everyXRound(10), onStep(Step.FINAL));
     stringArt.addListener(l);
   }
 
@@ -179,7 +179,9 @@ public class Cli {
     if (renderedImageDifference.isPresent()) {
       var l = Listener
           .saveToFile(renderedImageDifference.get())
-          .image(hc -> hc.getRenderedResult())
+          .image(hc -> hc.getRenderedResult()
+          .differenceWith(hc.getReferenceImage())
+          .multiplyWith(hc.getImportanceImage()))
           .onAny(afterDelay(2), onStep(Step.FINAL));
       stringArt.addListener(l);
     }
@@ -189,9 +191,7 @@ public class Cli {
     if (renderedStringPath.isPresent()) {
       var l = Listener
           .saveToFile(renderedStringPath.get())
-          .image(hc -> hc.getRenderedResult()
-              .differenceWith(hc.getReferenceImage())
-              .multiplyWith(hc.getImportanceImage()))
+          .stringPath()
           .onAny(afterDelay(2), onStep(Step.FINAL));
       stringArt.addListener(l);
     }
