@@ -10,7 +10,9 @@ This project generates string art versions of any image.
 
 Feed it an image, and it will re-create it with a single string connected to nails.
 
-<img src="samples/einstein/goal_image.png" alt="goal image" width="300"/><img src="samples/einstein/sample_output.png" alt="sample output" width="300"/>
+<p><img src="samples/einstein/goal_image.png" alt="goal image" width="200"/><img src="samples/einstein/sample_output.png" alt="sample output" width="200"/></p>
+
+<p><img src="samples/avatar/goal_image.png" alt="goal image" width="200"/><img src="samples/avatar/sample_output.png" alt="sample output" width="200"/></p>
 
 
 ## Usage
@@ -79,7 +81,6 @@ Many other implentations are available on the internet:
 ## TODO list
 
 * a GUI.
-* CLI: an option for setting the shape.
 * CLI: show default values in the help.
 * CLI: add a possibility to use a text string path file as a start point.
 * CORE: before the upscaling step, run a genetic algo for avoiding local optimums. (see [1](http://dr.library.brocku.ca/handle/10464/13709), [2](http://www.cosc.brocku.ca/~bross/JNetic/))

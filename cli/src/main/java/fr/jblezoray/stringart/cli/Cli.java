@@ -19,6 +19,7 @@ import fr.jblezoray.stringart.cli.argumentparser.types.NamedArgument.NamedArgume
 import fr.jblezoray.stringart.cli.argumentparser.types.PositionArgument.PositionArgumentBuilder;
 import fr.jblezoray.stringart.hillclimb.Step;
 import fr.jblezoray.stringart.hillclimb.StringArt;
+import fr.jblezoray.stringart.hillclimb.StringCharacteristics.Shape;
 import fr.jblezoray.stringart.hillclimb.listeners.Listener;
 
 public class Cli {
@@ -79,6 +80,13 @@ public class Cli {
               + "Enables a ~4x faster rendering, but is less precise.")
           .orDefault(() -> false)
           .andDo(disableEdgeWay -> configuration.setEdgeWayEnabled(!disableEdgeWay))
+          .build(),
+          
+      new FlagArgumentBuilder()
+          .withName("square")
+          .withDescription("Use a square shape instead of an oval one")
+          .orDefault(() -> false)
+          .andDo(sq -> this.configuration.setShape(sq ? Shape.FRAME_BORDER : Shape.CIRCLE))
           .build(),
           
       new NamedArgumentBuilder<File>()

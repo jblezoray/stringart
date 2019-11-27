@@ -50,6 +50,9 @@ public class Configuration {
   private Shape shape = Shape.CIRCLE;
   
   
+  public void setShape(Shape shape) {
+    this.shape = shape;
+  }
   public File getGoalImage() {
     return goalImage;
   }
