@@ -13,7 +13,7 @@ public class Configuration {
    * The prurpose of the program is to produce a string image that has the 
    * smallest difference with this image. 
    */
-  private File goalImage = new File("samples/test2/einstein2.png");
+  private File goalImage;
 
   /**
    * The importance image.
@@ -27,9 +27,7 @@ public class Configuration {
    * 
    * if not present, the approximation image will be determined automatically.
    */
-  private Optional<File> importanceImage = 
-//      Optional.of(new File("samples/test2/einstein_features2.png"));
-      Optional.empty();
+  private Optional<File> importanceImage = Optional.empty();
       
   /** 
    * Enable to let the algorithm distinguish between the string going clockwise 

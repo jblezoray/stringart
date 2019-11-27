@@ -118,7 +118,7 @@ public interface Image {
     byte[] newBytes = new byte[bytes.length];
     for (int i=0; i<bytes.length; i++) {
       newBytes[i] = 
-          (Byte.toUnsignedInt(bytes[i])<minValueAsByte) 
+          (Byte.toUnsignedInt(bytes[i])<minValue) 
           ? minValueAsByte : bytes[i]; 
     }
     return new ByteImage(size, newBytes);

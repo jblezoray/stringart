@@ -3,8 +3,9 @@ package fr.jblezoray.stringart.image;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ByteImageTest {
+import static fr.jblezoray.stringart.image.ImageTestUtils.*;
 
+public class ByteImageTest {
 
   @Test
   public void test_deriveX() {
@@ -41,15 +42,4 @@ public class ByteImageTest {
         0x00, 0x7F), 
         derived.getRawBytes());
   }
-  
-  private byte[] mkByteArray(int... vals) {
-    byte[] b = new byte[vals.length];
-    for (int i=0; i<vals.length; i++) {
-      b[i] = (byte) vals[i];
-    }
-    return b;
-  }
-  
-  
-  
 }

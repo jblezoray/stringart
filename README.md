@@ -10,6 +10,8 @@ This project generates string art versions of any image.
 
 Feed it an image, and it will re-create it with a single string connected to nails.
 
+<img src="samples/einstein/goal_image.png" alt="goal image" width="300"/><img src="samples/einstein/sample_output.png" alt="sample output" width="300"/>
+
 
 ## Usage
 

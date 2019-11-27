@@ -32,7 +32,7 @@ public class ByteImage implements Image {
     int[][] pixels = new int[this.size.w][this.size.h];
     for (int x=0; x<this.size.w; x++) {
       for (int y=0; y<this.size.h; y++) {
-        pixels[x][y] = Byte.toUnsignedInt(bytes[y*this.size.h + x]);
+        pixels[x][y] = Byte.toUnsignedInt(bytes[y*this.size.w + x]);
       }
     }
     return pixels;

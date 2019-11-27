@@ -36,7 +36,8 @@ public class EdgeFactory {
     this.allPossibleEdges = new ArrayList<>();
     for (int i=0; i<sc.getNbNails(); i++) {
       for (int j=i; j<sc.getNbNails(); j++) {
-        if (Math.abs(j-i) > sc.getMinimumNailsDistance()) {
+        var distance = Math.abs(j-i);
+        if (distance >= sc.getMinimumNailsDistance()) {
           // one for each possible connection between two nails.
           if (sc.isEdgeWayEnabled()) {
             allPossibleEdges.add(new Edge(i, true,  j, true));
@@ -64,7 +65,8 @@ public class EdgeFactory {
       int nailB, boolean nailBClockwise) {
     return allPossibleEdges.stream()
         .parallel()
-        .filter(edge -> edge.contains(nailA, this.wayEnabled ? nailAClockwise : DEFAULT_WAY) 
+        .filter(edge -> nailA!=nailB
+                     && edge.contains(nailA, this.wayEnabled ? nailAClockwise : DEFAULT_WAY) 
                      && edge.contains(nailB, this.wayEnabled ? nailBClockwise : DEFAULT_WAY))
         .findFirst();
   }
